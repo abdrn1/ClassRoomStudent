@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">StudentClassRoom</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Inser_id">Please Insert Your ID</string>
+    <string name="login">Log  In</string>
+    <string name="unable_to_connect_server">No server Found Please Check server and reOpen</string>
+    <string name="server_found">Class Server Found</string>
+    <string name="user_status">Status:</string>
+    <string name="user_id">USER ID</string>
+    <string name="send">Send</string>
+    <string name="btn_send">Send</string>
+
+    <string name="password">PASSWORD</string>
+    <string name="noseverfound">No Server Found, Restart Application</string>
+</resources>

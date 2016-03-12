@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="50dp"
+        android:paddingTop="0dp"
+        android:layout_height="50dp"
+        android:layout_rowSpan="2"
+        android:id="@+id/clientImage"
+        android:layout_gravity="center"
+        android:src="@drawable/a3"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:contentDescription="ClientImage" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="New Text"
+        android:id="@+id/clientName"
+        android:layout_row="0"
+        android:gravity="center"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textIsSelectable="true" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:paddingLeft="15dp"
+        android:id="@+id/clientselected"
+        android:layout_row="0"
+        android:layout_gravity="center_vertical"
+        android:layout_column="2"
+        android:layout_rowSpan="2"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="29dp"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:text="@string/user_status"
+        android:id="@+id/last_status"
+        android:layout_row="1"
+        android:gravity="center"
+        android:paddingLeft="8dp"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:textStyle="bold|italic"
+        android:textIsSelectable="true" />
+
+</GridLayout>
