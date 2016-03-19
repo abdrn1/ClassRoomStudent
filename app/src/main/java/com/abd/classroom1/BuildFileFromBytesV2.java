@@ -1,7 +1,8 @@
 package com.abd.classroom1;
 
+import android.util.Log;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -19,19 +20,28 @@ public class BuildFileFromBytesV2 {
         this.saveDirectoryPath=SaveDirectoryPath;
     }
 
-    public boolean constructFile(FileChunkMessageV2 imMsg) throws FileNotFoundException, IOException {
-        File folders = new File(saveDirectoryPath);
+    public boolean constructFile(FileChunkMessageV2 imMsg) throws IOException {
 
-        if(!(folders.exists())){
-            folders.mkdirs();
-        }
         if(imMsg.getChunkCounter()==(-1)){ //End OF Fle Packet
-            System.out.println("End Of File Packet");
-            aFile.close();
+            Log.d("INFO", "FIle Should Be closed");
+
+            try {
+                aFile.close();
+            } catch (Exception ex) {
+                Log.d("INFO", "File Already closed");
+                return true;
+            }
 
             return true;  /// return true if the file completed
         }
-        if(imMsg.getChunkCounter()==1L){ // New File
+        if (imMsg.getChunkCounter() == 1L) {
+            File folders = new File(saveDirectoryPath);
+
+            if (!(folders.exists())) {
+                folders.mkdirs();
+            }
+
+
             aFile = new RandomAccessFile(saveDirectoryPath+imMsg.getFileName(), "rw");
             System.out.println("New File Created");
             aFile.write(imMsg.getChunk());

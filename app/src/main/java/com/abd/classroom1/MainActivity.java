@@ -8,13 +8,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
-import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -25,6 +25,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
 import java.net.InetAddress;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -36,14 +37,14 @@ public class MainActivity extends AppCompatActivity
     FragmentManager fm;
     FragmentTransaction ft;
     LoginFragment loginfrag;
+    ExamViewerFragment examfrag;
     MessageViewerFragment messageViewerFragmentFragment;
+    ChatMessageModel ImageChatModel = null;
+    BuildFileFromBytesV2 buildExamFromBytes;
     private UserLogin iam = null;
     private BuildFileFromBytesV2 buildfromBytesV2;
-    ChatMessageModel ImageChatModel=null;
-
 
     ///// end note
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,7 +97,6 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
 
             client = null;
-            return;
         }
 
 
@@ -142,6 +142,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camara) {
+
+            dealWithExamMessage(null);
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
@@ -163,7 +165,7 @@ public class MainActivity extends AppCompatActivity
     /// ABd Add this code
 
     public boolean openConnection() throws Exception {
-        client = new Client(16384,8192);
+        client = new Client(16384, 8192);
         kryo = client.getKryo();
         kryo.register(byte[].class);
         kryo.register(String[].class);
@@ -203,64 +205,19 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                messageViewerFragmentFragment.addNewMessage((SimpleTextMessage) ot,false);
+                                messageViewerFragmentFragment.addNewMessage((SimpleTextMessage) ot, false);
                             }
                         });
 
                     }
                 } else if (ob instanceof FileChunkMessageV2) {
 
-                    try {
+                    if (((FileChunkMessageV2) ob).getFiletype().equals(FileChunkMessageV2.FILE)) {
+                        Log.d("FILE", "New File Recived");
+                        dealWithFileMessage(((FileChunkMessageV2) ob));
+                    } else if (((FileChunkMessageV2) ob).getFiletype().equals(FileChunkMessageV2.EXAM)) {
+                        dealWithExamMessage((FileChunkMessageV2) ob);
 
-                        String savepath = Environment.getExternalStorageDirectory().getPath();
-
-                        FileChunkMessageV2 fcmv2 = (FileChunkMessageV2) ob;
-
-                        Log.d("INFO", "File Chunk Recived");
-                        //recive the first packet from new file
-                       if (fcmv2.getChunkCounter() == 1L) {
-                          final FileChunkMessageV2 tfcmv2 = fcmv2;
-
-                            Log.d("INFO PAth=",savepath+"/Classrom");
-                           runOnUiThread(new Runnable() {
-                               @Override
-                               public void run() {
-
-                                   // we put loading Image Here
-                                   ImageChatModel=  messageViewerFragmentFragment.addNewImageMessage(tfcmv2,false);
-                               }
-                           });
-                           buildfromBytesV2 = new BuildFileFromBytesV2(savepath+"/Classrom/");
-                           buildfromBytesV2.constructFile(fcmv2);
-
-                        } else if (buildfromBytesV2 != null) {
-                            Log.d("INFO", "Current File Chunk: "+Long.toString(fcmv2.getChunkCounter()));
-                           if(  buildfromBytesV2.constructFile(fcmv2)){
-                               if(SendUtil.checkIfFileIsImage(fcmv2.getFileName())) {
-                                   Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
-
-                                   ImageChatModel.setImage(bm);
-                                   ImageChatModel.setSimpleMessage(fcmv2.getFileName()+" COMPLETE");
-                               }else{
-                                   Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
-                                   ImageChatModel.setImage(bm);
-                                   ImageChatModel.setSimpleMessage(fcmv2.getFileName()+" COMPLETE");
-                               }
-                               runOnUiThread(new Runnable() {
-                                   @Override
-                                   public void run() {
-
-                                       // we put loading Image Here
-                                       messageViewerFragmentFragment.updateAdapterchanges();
-                                   }
-                               });
-                               // we detect that file completed
-                                Log.d("INFO", "EOF, FILE REcived Completely");
-                             }
-                        /// SendUtil.sendFileChunkToRecivers(clientTable, fcmv2, tRecivers);
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
                     }
                 }
             }
@@ -268,6 +225,102 @@ public class MainActivity extends AppCompatActivity
         return true;
 
 
+    }
+
+
+    public void dealWithFileMessage(FileChunkMessageV2 fcmv2) {
+        try {
+
+            String savepath = Environment.getExternalStorageDirectory().getPath();
+            Log.d("INFO", "File Chunk Recived");
+            //recive the first packet from new file
+            if (fcmv2.getChunkCounter() == 1L) {
+                final FileChunkMessageV2 tfcmv2 = fcmv2;
+
+                Log.d("INFO PAth=", savepath + "/Classrom");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // we put loading Image Here
+                        ImageChatModel = messageViewerFragmentFragment.addNewImageMessage(tfcmv2, false);
+                    }
+                });
+                buildfromBytesV2 = new BuildFileFromBytesV2(savepath + "/Classrom/");
+                buildfromBytesV2.constructFile(fcmv2);
+
+            } else if (buildfromBytesV2 != null) {
+                Log.d("INFO", "Current File Chunk: " + Long.toString(fcmv2.getChunkCounter()));
+                if (buildfromBytesV2.constructFile(fcmv2)) {
+                    if (SendUtil.checkIfFileIsImage(fcmv2.getFileName())) {
+                        Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
+
+                        ImageChatModel.setImage(bm);
+                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
+                    } else {
+                        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
+                        ImageChatModel.setImage(bm);
+                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            // we put loading Image Here
+                            messageViewerFragmentFragment.updateAdapterchanges();
+                        }
+                    });
+                    // we detect that file completed
+                    Log.d("INFO", "EOF, FILE REcived Completely");
+                }
+                /// SendUtil.sendFileChunkToRecivers(clientTable, fcmv2, tRecivers);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void dealWithExamMessage(FileChunkMessageV2 efMessage) {
+        try {
+            Log.d("INFO", "EXAM File  Recived");
+            String internalSavePath = this.getApplicationContext().getFilesDir().getPath();
+            String tempfilename = "";
+            //recive the first packet from new file
+            if (efMessage.getChunkCounter() == 1L) {
+                Log.d("INFO", "New EXAM File  recived");
+                internalSavePath = this.getApplicationContext().getFilesDir().getPath();
+                Log.d("INFO", "Save Path " + internalSavePath);
+                tempfilename = efMessage.getFileName();
+                buildExamFromBytes = new BuildFileFromBytesV2(internalSavePath + "/");
+            }
+            Log.d("INFO", "Current File Chunk: " + Long.toString(efMessage.getChunkCounter()));
+            Log.d("INFO", "Current File Chunk: " + efMessage.getSenderID());
+            Log.d("INFO", "Current File Chunk: " + efMessage.getSenderName());
+            if (buildExamFromBytes.constructFile(efMessage)) {
+                Log.d("INFO", "FILE COMPLETE ");
+
+            }
+
+
+            List<QuestionItem> tQuestionsList = XmlExamParser.examParser(internalSavePath + "/" + tempfilename);
+            Log.d("EXAM INFO", "List Size = : " + Integer.toString(tQuestionsList.size()));
+            for (QuestionItem qqi : tQuestionsList) {
+                Log.d("EXAM TEXT", qqi.getQuestionText());
+                Log.d("EXAM Type", qqi.getQuestionType());
+                Log.d("Exam Answer", qqi.getQuestionAnswer());
+
+            }
+            ft = fm.beginTransaction();
+            examfrag = new ExamViewerFragment();
+            examfrag.setQuestionsList(tQuestionsList);
+            ft.replace(R.id.fragment_container, examfrag, "EXAM");
+            //examfrag.updateQuestionsList(tQuestionsList);
+            ft.commit();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+        }
     }
 
     @Override

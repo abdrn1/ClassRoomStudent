@@ -5,12 +5,25 @@ package com.abd.classroom1;
  */
 public class FileChunkMessageV2 {
 
+    final static String FILE = "FILE";
+    final static String EXAM = "EXAM";
+
     byte[] chunk; // chunk of bytes from the file;
     String senderID;
     String senderName;
     String[] recivers;
     String fileName;
+    String filetype;
+
     long chunkCounter = 0; // use it to know new file and end of file.
+
+    public FileChunkMessageV2() {
+    }
+
+    public FileChunkMessageV2(String sename, String seid) {
+        this.senderName = sename;
+        this.senderID = seid;
+    }
 
     public byte[] getChunk() {
         return chunk;
@@ -28,14 +41,12 @@ public class FileChunkMessageV2 {
         this.chunkCounter = chunkCounter;
     }
 
-
-
-    public FileChunkMessageV2(){
+    public String getFiletype() {
+        return filetype;
     }
 
-    public FileChunkMessageV2(String sename,String seid ){
-        this.senderName= sename;
-        this.senderID= seid;
+    public void setFiletype(String filetype) {
+        this.filetype = filetype;
     }
 
    /* public int getFileSize() {

@@ -16,7 +16,13 @@
     <string name="user_id">USER ID</string>
     <string name="send">Send</string>
     <string name="btn_send">Send</string>
-
     <string name="password">PASSWORD</string>
     <string name="noseverfound">No Server Found, Restart Application</string>
+    <string name="mcq_question">MCQ </string>
+    <string name="fill_question">Fill Gap </string>
+    <string name="truefalse_question">True or False </string>
+    <string name="finish_exam">Finish </string>
+
+    <string name="radiotrue">TRUE</string>
+    <string name="radiofalse">FALSE</string>
 </resources>
