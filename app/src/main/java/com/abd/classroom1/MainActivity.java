@@ -2,11 +2,17 @@ package com.abd.classroom1;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.os.StrictMode;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -46,14 +53,33 @@ public class MainActivity extends AppCompatActivity
     private BuildFileFromBytesV2 buildfromBytesV2;
 
     ///// end note
+
+    // lock code
+    private static final int ADMIN_INTENT = 15;
+    private static final String description = "Sample Administrator description";
+    private DevicePolicyManager mDevicePolicyManager;
+    private ComponentName mComponentName;
+    Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_main);
+        handler = new Handler();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // lock code
+        mDevicePolicyManager = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mComponentName = new ComponentName(this, MyAdminReceiver.class);
+
+        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponentName);
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, description);
+        startActivityForResult(intent, ADMIN_INTENT);
 
        /* FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -162,6 +188,7 @@ public class MainActivity extends AppCompatActivity
         kryo.register(TextMeesage.class);
         kryo.register(SimpleTextMessage.class);
         kryo.register(FileChunkMessageV2.class);
+        kryo.register(LockMessage.class);
     }
 
     public boolean openConnection() throws Exception {
@@ -213,6 +240,42 @@ public class MainActivity extends AppCompatActivity
                         dealWithFileMessage(((FileChunkMessageV2) ob));
                     } else if (((FileChunkMessageV2) ob).getFiletype().equals(FileChunkMessageV2.EXAM)) {
                         dealWithExamMessage((FileChunkMessageV2) ob);
+
+                    }
+                } else if (ob instanceof LockMessage) {
+                    Log.d("FILE", "Lock Message received");
+                    LockMessage msg = (LockMessage) ob;
+                    if (msg.isLock()) {
+                        boolean isAdmin = mDevicePolicyManager.isAdminActive(mComponentName);
+                        if (isAdmin) {
+                            mDevicePolicyManager.setPasswordQuality(mComponentName, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
+                            mDevicePolicyManager.setPasswordMinimumLength(mComponentName, 5);
+                            mDevicePolicyManager.resetPassword("123456", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+                            mDevicePolicyManager.lockNow();
+
+                            handler.post(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+                                    final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                                }
+                            });
+
+
+                        } else {
+                        }
+                    } else {
+                        mDevicePolicyManager.setPasswordQuality(mComponentName, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
+                        mDevicePolicyManager.setPasswordMinimumLength(mComponentName, 0);
+                        mDevicePolicyManager.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+                        handler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+                            }
+                        });
 
                     }
                 }
@@ -324,6 +387,18 @@ public class MainActivity extends AppCompatActivity
         } catch (Exception ex) {
             ex.printStackTrace();
 
+        }
+    }
+
+    // lock code
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ADMIN_INTENT) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(getApplicationContext(), "Registered As Admin", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(getApplicationContext(), "Failed to register as Admin", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
