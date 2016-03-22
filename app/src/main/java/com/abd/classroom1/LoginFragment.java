@@ -39,6 +39,8 @@ public class LoginFragment extends Fragment {
     private boolean hideerrorMsg=false;
 
     private OnFragmentInteractionListener mListener;
+    private TextView wrongUserName;
+    private TextView noServertv;
 
     /**
      * Use this factory method to create a new instance of
@@ -95,14 +97,22 @@ public class LoginFragment extends Fragment {
             public void onClick(View v) {
                 EditText idText = (EditText) getActivity().findViewById(R.id.user_id_editext);
                 String userID = idText.getText().toString();
+                if(client!=null&& client.isConnected())
                client.sendTCP(new UserLogin(userID,"STUDENT"));
             }
         });
 
-        TextView t1 = (TextView) getActivity().findViewById(R.id.noservertextview);
+        noServertv = (TextView) getActivity().findViewById(R.id.noservertextview);
+        wrongUserName = (TextView)getActivity().findViewById(R.id.wrong_user_name);
         if(hideerrorMsg) {
-            t1.setVisibility(View.INVISIBLE);
+            noServertv.setVisibility(View.INVISIBLE);
         }
+    }
+
+    public void showInvalidLoginMessage(){
+        wrongUserName.setVisibility(View.VISIBLE);
+        wrongUserName.setText("Wrong user Name and Password");
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -113,6 +123,7 @@ public class LoginFragment extends Fragment {
     }
     public void hideErrorMessage(){
         hideerrorMsg = true;
+        noServertv.setVisibility(View.INVISIBLE);
 
     }
 

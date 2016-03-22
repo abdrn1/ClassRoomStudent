@@ -40,7 +40,8 @@
             android:layout_width="fill_parent"
             android:hint="@string/password"
             android:id="@+id/user_password_editext"
-            android:layout_height="fill_parent" />
+            android:layout_height="fill_parent"
+            android:inputType="textCapWords" />
 
     </android.support.design.widget.TextInputLayout>
 
@@ -65,6 +66,18 @@
         android:layout_below="@+id/view"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="110dp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/wrong_user_name"
+        android:textColor="#d66a6a"
+        android:textStyle="bold"
+        android:layout_marginTop="25dp"
+       android:visibility="invisible"
+        android:background="@drawable/rounded_textview"
+        android:layout_below="@+id/noservertextview"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

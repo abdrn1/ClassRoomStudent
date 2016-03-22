@@ -29,7 +29,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        LoginFragment.OnFragmentInteractionListener {
+        LoginFragment.OnFragmentInteractionListener,Runnable {
 
     // begin note : should be save later in the bundle;
     Client client;
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity
     MessageViewerFragment messageViewerFragmentFragment;
     ChatMessageModel ImageChatModel = null;
     BuildFileFromBytesV2 buildExamFromBytes;
+    Thread conectionThread;
     private UserLogin iam = null;
     private BuildFileFromBytesV2 buildfromBytesV2;
 
@@ -83,21 +84,10 @@ public class MainActivity extends AppCompatActivity
 
 
         //open the connection for the first TIME
-        try {
-            if (openConnection()) {
-                Toast.makeText(MainActivity.this,
-                        getResources().getText(R.string.server_found), Toast.LENGTH_LONG).show();
-                loginfrag.setClient(client);
-                loginfrag.hideErrorMessage();
-            }
+        prepareConnection();
+         conectionThread = new Thread(this);
+        conectionThread.start();
 
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this,
-                    getResources().getText(R.string.unable_to_connect_server), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-
-            client = null;
-        }
 
 
     }
@@ -163,8 +153,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /// ABd Add this code
-
-    public boolean openConnection() throws Exception {
+    private void prepareConnection(){
         client = new Client(16384, 8192);
         kryo = client.getKryo();
         kryo.register(byte[].class);
@@ -173,6 +162,10 @@ public class MainActivity extends AppCompatActivity
         kryo.register(TextMeesage.class);
         kryo.register(SimpleTextMessage.class);
         kryo.register(FileChunkMessageV2.class);
+    }
+
+    public boolean openConnection() throws Exception {
+
         client.start();
         InetAddress address = client.discoverHost(54777, 5000);
         client.connect(5000, address, 9995, 54777);
@@ -180,6 +173,11 @@ public class MainActivity extends AppCompatActivity
         client.addListener(new Listener() {
             public void received(Connection c, Object ob) {
                 if (ob instanceof UserLogin) {
+                    if (!((UserLogin) ob).isLogin_Succesful()) {
+                        showInvalidUserNameOrPassword();
+                        return;
+
+                    }
                     if (((UserLogin) ob).getUserType().equals("STUDENT")) {
                         System.out.println("Login Message Recived");
                         if (((UserLogin) ob).isLogin_Succesful() && (iam == null)) {
@@ -194,8 +192,6 @@ public class MainActivity extends AppCompatActivity
                             messageViewerFragmentFragment.setUserlogin((UserLogin) ob);
                             ft.commit();
                             Log.d("INFO", "Succesfull Log IN");
-                        } else if (((UserLogin) ob).getUserType().equals("STUDENT")) {
-                            //  activeusersfragment.addNewClient(((UserLogin) ob));
                         }
                     }
                 } else if (ob instanceof SimpleTextMessage) {
@@ -225,6 +221,14 @@ public class MainActivity extends AppCompatActivity
         return true;
 
 
+    }
+    private void showInvalidUserNameOrPassword() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loginfrag.showInvalidLoginMessage();
+            }
+        });
     }
 
 
@@ -331,5 +335,36 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void setSuccessfulLogin(UserLogin ul) {
         this.iam = ul;
+    }
+
+    @Override
+    public void run() {
+        boolean flag= true;
+        while(flag) {
+            Log.d("INFO","hello thread");
+
+            try {
+                Thread.sleep(100);
+                if (openConnection()) {
+                    Log.d("Info", "Connectione done");
+                    loginfrag.setClient(client);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loginfrag.hideErrorMessage();
+                        }
+                    });
+                    ;
+                    flag = false;
+                }
+
+            } catch (Exception e) {
+                //  Toast.makeText(MainActivity.this,
+                // getResources().getText(R.string.unable_to_connect_server), Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
+
+
+        }
     }
 }
