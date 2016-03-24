@@ -52,6 +52,10 @@ public class MainActivity extends AppCompatActivity
     private UserLogin iam = null;
     private BuildFileFromBytesV2 buildfromBytesV2;
 
+    private  int mDstWidth; // required image Width
+    private  int mDstHeight; // required Image Hight
+
+
     ///// end note
 
     // lock code
@@ -89,6 +93,10 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });*/
+
+        // define device width and hight for image decoding
+        mDstWidth = getResources().getDimensionPixelSize(R.dimen.destination_width);
+        mDstHeight = getResources().getDimensionPixelSize(R.dimen.destination_height);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -320,8 +328,10 @@ public class MainActivity extends AppCompatActivity
                 Log.d("INFO", "Current File Chunk: " + Long.toString(fcmv2.getChunkCounter()));
                 if (buildfromBytesV2.constructFile(fcmv2)) {
                     if (SendUtil.checkIfFileIsImage(fcmv2.getFileName())) {
-                        Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
-
+                       // Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
+                        String tempImagePath = savepath + "/Classrom/" + fcmv2.getFileName();
+                       // Bitmap bm = ScalingUtilities.fitImageDecoder(tempImagePath,mDstWidth,mDstHeight);
+                        Bitmap bm = ScalDownImage.decodeSampledBitmapFromResource(tempImagePath,mDstWidth,mDstHeight);
                         ImageChatModel.setImage(bm);
                         ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
                     } else {

@@ -43,6 +43,7 @@ public class MessageViewerFragment extends Fragment {
 
     private Client client;
     private UserLogin iam;
+    private String reciverID;
     private ListView listview;
     private List<ChatMessageModel> l1;
     private MessagesListAdapter mLAdapter;
@@ -63,6 +64,10 @@ public class MessageViewerFragment extends Fragment {
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public void setReciverID(String rID){
+        this.reciverID=rID;
     }
 
     @Override
@@ -97,7 +102,7 @@ public class MessageViewerFragment extends Fragment {
         currTm.setSenderName(iam.getUserName());
         currTm.setMessageType("TXT");
         currTm.setTextMessage(txtmsg);
-        currTm.setRecivers(new String[]{"100"});
+        currTm.setRecivers(new String[]{reciverID});
         addNewMessage(new SimpleTextMessage(iam.getUserID(), iam.getUserName(), "TXT", txtmsg), true);
         client.sendTCP(currTm);
 

@@ -15,6 +15,7 @@
         android:textSize="12dp"
         android:textColor="@color/lblFromName"
         android:textStyle="italic"
+        android:text="hello there"
         android:padding="5dp"/>
 
     <TextView
@@ -26,6 +27,7 @@
         android:textColor="@color/title_gray"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
+        android:text="go and replace it"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
         android:background="@drawable/bg_msg_from"/>
@@ -35,8 +37,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:padding="5dp"
-        />
+        android:scaleType="fitCenter" />
 
-        />
+
 
 </LinearLayout>

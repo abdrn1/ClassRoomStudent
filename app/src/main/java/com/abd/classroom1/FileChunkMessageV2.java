@@ -14,7 +14,6 @@ public class FileChunkMessageV2 {
     String[] recivers;
     String fileName;
     String filetype;
-
     long chunkCounter = 0; // use it to know new file and end of file.
 
     public FileChunkMessageV2() {
@@ -41,14 +40,6 @@ public class FileChunkMessageV2 {
         this.chunkCounter = chunkCounter;
     }
 
-    public String getFiletype() {
-        return filetype;
-    }
-
-    public void setFiletype(String filetype) {
-        this.filetype = filetype;
-    }
-
    /* public int getFileSize() {
         return fileSize;
     }
@@ -57,6 +48,14 @@ public class FileChunkMessageV2 {
         this.fileSize = fileSize;
     }*/
 
+    public String getFiletype() {
+        return filetype;
+    }
+
+    public void setFiletype(String filetype) {
+        this.filetype = filetype;
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -64,6 +63,22 @@ public class FileChunkMessageV2 {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+
+
+
+
+
+   /*  public boolean isNewfile() {
+        return newfile;
+    }
+
+    public void setNewfile(boolean newfile) {
+        this.newfile = newfile;
+    }*/
+
+
+
+
     public String getSenderID() {
         return senderID;
     }
@@ -88,4 +103,11 @@ public class FileChunkMessageV2 {
         this.recivers = recivers;
     }
 
+   /* public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }*/
 }
