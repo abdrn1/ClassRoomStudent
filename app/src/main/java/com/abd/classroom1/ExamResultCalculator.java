@@ -1,6 +1,8 @@
 package com.abd.classroom1;
 
 
+import android.util.Log;
+
 import java.util.List;
 
 /**
@@ -8,7 +10,9 @@ import java.util.List;
  */
 public class ExamResultCalculator {
 
-    public static double CalculateExamResult(List<QuestionItem> questionsList) {
+
+    public static ExamResult CalculateExamResult(List<QuestionItem> questionsList) {
+        ExamResult examResult = new ExamResult();
         double mcqResult = 0;
         double truefalseResult = 0;
         double fillResult = 0;
@@ -17,17 +21,22 @@ public class ExamResultCalculator {
             switch (qi.getQuestionType()) {
                 case QuestionItem.QMCQ:
                     mcqResult = mcqResult + calculateMCQ(qi);
+                    examResult.exaMmark = examResult.exaMmark + qi.getQuestionWeight();
                     break;
                 case QuestionItem.QTRUEORFALSE:
+                    Log.d("result MCQ", "Found TRUE OR FALSE");
                     truefalseResult = truefalseResult + calculateTrueFalse(qi);
+                    examResult.exaMmark = examResult.exaMmark + qi.getQuestionWeight();
                     break;
                 case QuestionItem.MFILL:
                     fillResult = fillResult + calculateFill(qi);
+                    examResult.exaMmark = examResult.exaMmark + qi.getQuestionWeight();
                     break;
             }
         }
         finalResult = mcqResult + truefalseResult + fillResult;
-        return finalResult;
+        examResult.setStudentMark(finalResult);
+        return examResult;
     }
 
     private static int calculateMCQ(QuestionItem mcqItem) {
@@ -42,23 +51,30 @@ public class ExamResultCalculator {
 
             }
         }
-
+        Log.d("result MCQ", Integer.toString(result));
         return result;
     }
 
     private static int calculateTrueFalse(QuestionItem tfItem) {
+        int result =0;
 
         if (tfItem.getStudentQuestionAnswer().equals(tfItem.getQuestionAnswer())) {
-            return tfItem.getQuestionWeight();
+            result =tfItem.getQuestionWeight();
+            Log.d("result TrueORFalse", Integer.toString(result));
+            return result;
+
         }
-        return 0;
+        return result;
     }
 
     private static int calculateFill(QuestionItem fillItem) {
-        if (fillItem.getStudentQuestionAnswer().equals(fillItem.getQuestionAnswer())) {
-            return fillItem.getQuestionWeight();
+        int result =0;
+        if (fillItem.getStudentQuestionAnswer().trim().equals(fillItem.getQuestionAnswer().trim())) {
+            result =fillItem.getQuestionWeight();
+            Log.d("result Fill", Integer.toString(result));
+            return result;
         }
-        return 0;
+        return result;
     }
 
 }

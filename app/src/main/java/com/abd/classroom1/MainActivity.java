@@ -31,12 +31,13 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        LoginFragment.OnFragmentInteractionListener,Runnable {
+        LoginFragment.OnFragmentInteractionListener,Runnable ,ExamViewerFragment.OnFragmentInteractionListener{
 
     // begin note : should be save later in the bundle;
     Client client;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("life", "Activity Created");
         super.onCreate(savedInstanceState);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -197,6 +199,8 @@ public class MainActivity extends AppCompatActivity
         kryo.register(SimpleTextMessage.class);
         kryo.register(FileChunkMessageV2.class);
         kryo.register(LockMessage.class);
+        kryo.register(StatusMessage.class);
+        kryo.register(ExamResultMessage.class);
     }
 
     public boolean openConnection() throws Exception {
@@ -222,9 +226,10 @@ public class MainActivity extends AppCompatActivity
                             if (messageViewerFragmentFragment == null) {
                                 messageViewerFragmentFragment = new MessageViewerFragment();
                             }
-                            ft.replace(R.id.fragment_container, messageViewerFragmentFragment, "ACTIVE");
+                            ft.replace(R.id.fragment_container, messageViewerFragmentFragment, "chat");
                             messageViewerFragmentFragment.setClient(client);
                             messageViewerFragmentFragment.setUserlogin((UserLogin) ob);
+                            iam = (UserLogin)ob;
                             ft.commit();
                             Log.d("INFO", "Succesfull Log IN");
                         }
@@ -333,11 +338,13 @@ public class MainActivity extends AppCompatActivity
                        // Bitmap bm = ScalingUtilities.fitImageDecoder(tempImagePath,mDstWidth,mDstHeight);
                         Bitmap bm = ScalDownImage.decodeSampledBitmapFromResource(tempImagePath,mDstWidth,mDstHeight);
                         ImageChatModel.setImage(bm);
-                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
+                        ImageChatModel.setMessageType("IMG");
+                        ImageChatModel.setSimpleMessage(fcmv2.getFileName());
                     } else {
                         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
                         ImageChatModel.setImage(bm);
                         ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
+                        ImageChatModel.setMessageType("FILE");
                     }
                     runOnUiThread(new Runnable() {
                         @Override
@@ -389,6 +396,8 @@ public class MainActivity extends AppCompatActivity
             }
             ft = fm.beginTransaction();
             examfrag = new ExamViewerFragment();
+            examfrag.setClient(client);
+            examfrag.setIam(iam);
             examfrag.setQuestionsList(tQuestionsList);
             ft.replace(R.id.fragment_container, examfrag, "EXAM");
             //examfrag.updateQuestionsList(tQuestionsList);
@@ -451,5 +460,53 @@ public class MainActivity extends AppCompatActivity
 
 
         }
+    }
+
+    @Override
+    public void retuntoPreviousScreen() {
+        ft = fm.beginTransaction();
+        if (messageViewerFragmentFragment == null) {
+            messageViewerFragmentFragment = new MessageViewerFragment();
+        }
+        ft.replace(R.id.fragment_container, messageViewerFragmentFragment, "chat");
+        messageViewerFragmentFragment.setClient(client);
+        messageViewerFragmentFragment.setUserlogin((UserLogin) iam);
+        ft.commit();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+      //  Log.d("life","Onstop");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+      //  Log.d("life", "On Start");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+       // Log.d("life", "On pause");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("life", "on Restart");
+        try {
+            SendUtil.reConnect(client,iam);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //Log.d("life", "on Destory");
     }
 }

@@ -43,4 +43,20 @@ public class SendUtil {
     }
 
 
+    public static void reConnect(Client cl, UserLogin iam) throws IOException {
+        if((cl != null )&& (iam !=null) ) {
+            if (!cl.isConnected()) {
+                cl.reconnect();
+                cl.sendTCP(iam);
+                Log.d("con", "Try To Reconnect");
+                Log.d("con", "Iam " + iam.getUserID());
+                Log.d("con", "Iam " + iam.getUserType());
+
+            }
+        }
+
+    }
+
+
+
 }

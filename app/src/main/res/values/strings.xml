@@ -22,7 +22,8 @@
     <string name="fill_question">Fill Gap </string>
     <string name="truefalse_question">True or False </string>
     <string name="finish_exam">Finish </string>
-
+    <string name="tue_answer">TRUE</string>
+    <string name="false_answer">FALSE </string>
     <string name="radiotrue">TRUE</string>
     <string name="radiofalse">FALSE</string>
 </resources>

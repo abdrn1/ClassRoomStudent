@@ -15,7 +15,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.esotericsoftware.kryonet.Client;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +44,9 @@ public class ExamViewerFragment extends Fragment {
     TextView tvNumberofpages;
     private RecyclerView mRecyclerView;
     private ExamRowAdapter mAdapter;
+    private Client client;
+    private UserLogin iam;
+
     private RecyclerView.LayoutManager mLayoutManager;
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -66,6 +73,22 @@ public class ExamViewerFragment extends Fragment {
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public UserLogin getIam() {
+        return iam;
+    }
+
+    public void setIam(UserLogin iam) {
+        this.iam = iam;
     }
 
     @Override
@@ -108,6 +131,7 @@ public class ExamViewerFragment extends Fragment {
         btnFinsihExam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                finishExam();
 
             }
         });
@@ -182,33 +206,43 @@ public class ExamViewerFragment extends Fragment {
 
     }
 
-    private double finishExam() {
-        double re = ExamResultCalculator.CalculateExamResult(examQuestions);
-        return re;
+    private void finishExam() {
+        ExamResult result = ExamResultCalculator.CalculateExamResult(examQuestions);
+        Log.d("re", "Exam Result = : " + Double.toString(result.getStudentMark()));
+        ExamResultMessage erm = new ExamResultMessage();
+        erm.setSenderID(iam.getUserID());
+        erm.setSenderName(iam.getUserName());
+        erm.setReceivers(new String[]{"100"});
+
+        erm.setExamresult(result.getExaMmark());
+        erm.setStudentresult(result.getStudentMark());
+        if (client != null) {
+            if (client.isConnected()) {
+                client.sendTCP(erm);
+                Log.d("re", "Send Exam Result to Teacher");
+
+            } else {
+
+                try {
+                    SendUtil.reConnect(client, iam);
+                    Log.d("re", "Send Exam Result to Teacher");
+                    client.sendTCP(erm);
+                } catch (IOException e) {
+                    Toast.makeText(getActivity(), "There is No Connection With Server", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+
+        mListener.retuntoPreviousScreen();
     }
 
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-
-        //  just add data to  exams list;
-
-
-        // begin initialize Exam RecyclerView
-
-/*
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-      mRecyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-      mLayoutManager = new LinearLayoutManager(this.getActivity());
-       mRecyclerView.setLayoutManager(mLayoutManager);*/
-
-        // specify an adapter (see also next example)
 
 
     }
@@ -240,6 +274,12 @@ public class ExamViewerFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        this.mListener = (OnFragmentInteractionListener) activity;
+    }
+
+    public void setmListener(Activity activity) {
+        this.mListener = (OnFragmentInteractionListener) activity;
+
     }
 
     @Override
@@ -260,7 +300,8 @@ public class ExamViewerFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onExamViewerInteraction(Uri uri);
+        //  public void onExamViewerInteraction(Uri uri);
+        public void retuntoPreviousScreen();
     }
 
 }

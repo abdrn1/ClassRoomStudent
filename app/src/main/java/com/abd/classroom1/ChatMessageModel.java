@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 public class ChatMessageModel {
 
     String senderName;
+    String senderID;
     String recivers;
     String messageType;
     String simpleMessage;
@@ -20,12 +21,22 @@ public class ChatMessageModel {
 
     }
 
+
+
     public ChatMessageModel(String senderName, String recivers, String messageType, String simpleMessage, boolean isSelf) {
         this.senderName = senderName;
         this.recivers = recivers;
         this.messageType = messageType;
         this.simpleMessage = simpleMessage;
         this.isSelf = isSelf;
+    }
+
+    public String getSenderID() {
+        return senderID;
+    }
+
+    public void setSenderID(String senderID) {
+        this.senderID = senderID;
     }
 
     public Bitmap getImage() {

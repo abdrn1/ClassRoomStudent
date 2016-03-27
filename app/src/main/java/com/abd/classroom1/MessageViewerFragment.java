@@ -7,9 +7,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import com.esotericsoftware.kryonet.Client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +46,7 @@ public class MessageViewerFragment extends Fragment {
 
     private Client client;
     private UserLogin iam;
-    private String reciverID;
+    private String reciverID="100";
     private ListView listview;
     private List<ChatMessageModel> l1;
     private MessagesListAdapter mLAdapter;
@@ -71,7 +74,7 @@ public class MessageViewerFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(final Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         listview = (ListView) getActivity().findViewById(R.id.list_view_messages);
         l1 = new ArrayList();
@@ -81,15 +84,40 @@ public class MessageViewerFragment extends Fragment {
         listview.setAdapter(mLAdapter);
         final EditText inputMsg = (EditText)getActivity().findViewById(R.id.inputMsg);
         Button btnsend = (Button) getActivity().findViewById(R.id.btnSend);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String msgType = (l1.get(position)).getMessageType();
+                Log.d("item", "The Itemclicked " + msgType);
+                if(msgType.equals("IMG")){
+                    String fname = (l1.get(position)).getSimpleMessage();
+                    String savePath = Environment.getExternalStorageDirectory().getPath();
+                    savePath=savePath+"/Classrom/"+(l1.get(position)).getSimpleMessage();
+                    GeneralUtil.openImage(getActivity(),savePath);
+                }
+
+            }
+        });
+
         btnsend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String msg = inputMsg.getText().toString();
-                //String savepath = Environment.getExternalStorageDirectory().getPath();
-                // Toast.makeText(getActivity(), savepath, Toast.LENGTH_LONG).show();
-                if (!(msg.equals(""))) {
-                    sendTextMessage(msg);
-                    inputMsg.setText("");
+                if (client.isConnected()) {
+                    String msg = inputMsg.getText().toString();
+                    //String savepath = Environment.getExternalStorageDirectory().getPath();
+                    // Toast.makeText(getActivity(), savepath, Toast.LENGTH_LONG).show();
+                    if (!(msg.equals(""))) {
+                        sendTextMessage(msg);
+                        inputMsg.setText("");
+                    }
+                }else{
+                    Toast.makeText(getActivity(),"No connection",Toast.LENGTH_SHORT );
+                    try {
+                        SendUtil.reConnect(client,iam);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
