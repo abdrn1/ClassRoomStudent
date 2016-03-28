@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity
                     } else {
                         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
                         ImageChatModel.setImage(bm);
-                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() + " COMPLETE");
+                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() );
                         ImageChatModel.setMessageType("FILE");
                     }
                     runOnUiThread(new Runnable() {
