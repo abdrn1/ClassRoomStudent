@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -31,9 +33,13 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+
+import Decoder.BASE64Encoder;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -190,7 +196,7 @@ public class MainActivity extends AppCompatActivity
 
     /// ABd Add this code
     private void prepareConnection(){
-        client = new Client(16384, 8192);
+        client = new Client(1024*1024, 1024*1024);
         kryo = client.getKryo();
         kryo.register(byte[].class);
         kryo.register(String[].class);
@@ -201,6 +207,10 @@ public class MainActivity extends AppCompatActivity
         kryo.register(LockMessage.class);
         kryo.register(StatusMessage.class);
         kryo.register(ExamResultMessage.class);
+        kryo.register(MonitorRequestMessage.class);
+        kryo.register(ScreenshotMessage.class);
+        kryo.register(BoardScreenshotMessage.class);
+
     }
 
     public boolean openConnection() throws Exception {
@@ -229,7 +239,7 @@ public class MainActivity extends AppCompatActivity
                             ft.replace(R.id.fragment_container, messageViewerFragmentFragment, "chat");
                             messageViewerFragmentFragment.setClient(client);
                             messageViewerFragmentFragment.setUserlogin((UserLogin) ob);
-                            iam = (UserLogin)ob;
+                            iam = (UserLogin) ob;
                             ft.commit();
                             Log.d("INFO", "Succesfull Log IN");
                         }
@@ -291,6 +301,36 @@ public class MainActivity extends AppCompatActivity
                         });
 
                     }
+                } else if (ob instanceof MonitorRequestMessage) {
+
+                    Log.i("ttt", "Monitor request received at client ....");
+                    Bitmap bm = screenShot(getWindow().getDecorView().getRootView());
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bm.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+                    byte[] imageBytes = baos.toByteArray();
+
+
+                    BASE64Encoder encoder = new BASE64Encoder();
+                    String encodedImage = encoder.encode(imageBytes);
+
+                    try {
+                        baos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    final ScreenshotMessage m = new ScreenshotMessage();
+                    m.setSenderID(iam.getUserID());
+                    m.setReceiverID(((MonitorRequestMessage) ob).getSenderID());
+                    m.setScreenshot(encodedImage);
+                    Log.i("ttt", encodedImage.getBytes().length + "");
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            client.sendUDP(m);
+
+                        }
+                    }).start();
                 }
             }
         });
@@ -298,6 +338,23 @@ public class MainActivity extends AppCompatActivity
 
 
     }
+
+
+    public Bitmap screenShot(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+
+//        float scaleX = 0.5f;
+//        float scaleY = 0.5f;
+//        float pivotX = 0;
+//        float pivotY = 0;
+
+//        Matrix scaleMatrix = new Matrix();
+//        scaleMatrix.setScale(scaleX, scaleY, pivotX, pivotY);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+        return bitmap;
+    }
+
     private void showInvalidUserNameOrPassword() {
         runOnUiThread(new Runnable() {
             @Override
