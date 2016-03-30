@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity
 
     /// ABd Add this code
     private void prepareConnection(){
-        client = new Client(1024*1024, 1024*1024);
+        client = new Client(1024*1024, (1024*1024)/10);
         kryo = client.getKryo();
         kryo.register(byte[].class);
         kryo.register(String[].class);
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity
                     Log.i("ttt", "Monitor request received at client ....");
                     Bitmap bm = screenShot(getWindow().getDecorView().getRootView());
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+                    bm.compress(Bitmap.CompressFormat.JPEG, 40, baos);
                     byte[] imageBytes = baos.toByteArray();
 
 
@@ -341,7 +341,7 @@ public class MainActivity extends AppCompatActivity
 
 
     public Bitmap screenShot(View view) {
-        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.RGB_565);
 
 //        float scaleX = 0.5f;
 //        float scaleY = 0.5f;
