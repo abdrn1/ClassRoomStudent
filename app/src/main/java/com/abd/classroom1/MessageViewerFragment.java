@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.esotericsoftware.kryonet.Client;
@@ -84,6 +85,9 @@ public class MessageViewerFragment extends Fragment {
         listview.setAdapter(mLAdapter);
         final EditText inputMsg = (EditText)getActivity().findViewById(R.id.inputMsg);
         Button btnsend = (Button) getActivity().findViewById(R.id.btnSend);
+        TextView usernameTv = (TextView)getActivity().findViewById(R.id.username_tv);
+        String hello = getString(R.string.hello_user);
+        usernameTv.setText(hello+" "+iam.getUserName());
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

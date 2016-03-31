@@ -26,4 +26,5 @@
     <string name="false_answer">FALSE </string>
     <string name="radiotrue">TRUE</string>
     <string name="radiofalse">FALSE</string>
+    <string name="hello_user">Hello :</string>
 </resources>

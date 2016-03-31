@@ -37,6 +37,7 @@ import com.esotericsoftware.kryonet.Listener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Hashtable;
 import java.util.List;
 
 import Decoder.BASE64Encoder;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity
     Thread conectionThread;
     private UserLogin iam = null;
     private BuildFileFromBytesV2 buildfromBytesV2;
+    private Hashtable<RecivedFileKey,BuildFileFromBytesV2> recivedFilesTable;
 
     private  int mDstWidth; // required image Width
     private  int mDstHeight; // required Image Hight
@@ -87,11 +89,14 @@ public class MainActivity extends AppCompatActivity
         // lock code
         mDevicePolicyManager = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
         mComponentName = new ComponentName(this, MyAdminReceiver.class);
+        recivedFilesTable = new Hashtable<>();
 
         Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, mComponentName);
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, description);
         startActivityForResult(intent, ADMIN_INTENT);
+
+
 
        /* FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -385,36 +390,43 @@ public class MainActivity extends AppCompatActivity
                 });
                 buildfromBytesV2 = new BuildFileFromBytesV2(savepath + "/Classrom/");
                 buildfromBytesV2.constructFile(fcmv2);
+                recivedFilesTable.put(new RecivedFileKey(fcmv2.senderID, fcmv2.getFileName()), buildfromBytesV2);
 
-            } else if (buildfromBytesV2 != null) {
-                Log.d("INFO", "Current File Chunk: " + Long.toString(fcmv2.getChunkCounter()));
-                if (buildfromBytesV2.constructFile(fcmv2)) {
-                    if (SendUtil.checkIfFileIsImage(fcmv2.getFileName())) {
-                       // Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
-                        String tempImagePath = savepath + "/Classrom/" + fcmv2.getFileName();
-                       // Bitmap bm = ScalingUtilities.fitImageDecoder(tempImagePath,mDstWidth,mDstHeight);
-                        Bitmap bm = ScalDownImage.decodeSampledBitmapFromResource(tempImagePath,mDstWidth,mDstHeight);
-                        ImageChatModel.setImage(bm);
-                        ImageChatModel.setMessageType("IMG");
-                        ImageChatModel.setSimpleMessage(fcmv2.getFileName());
-                    } else {
-                        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
-                        ImageChatModel.setImage(bm);
-                        ImageChatModel.setSimpleMessage(fcmv2.getFileName() );
-                        ImageChatModel.setMessageType("FILE");
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+            } else {
+                BuildFileFromBytesV2 bffb = recivedFilesTable.get(new RecivedFileKey(fcmv2.getSenderID(), fcmv2.getFileName()));
+                if (bffb != null) {
 
-                            // we put loading Image Here
-                            messageViewerFragmentFragment.updateAdapterchanges();
+                    Log.d("INFO", "Current File Chunk: " + Long.toString(fcmv2.getChunkCounter()));
+                    if (bffb.constructFile(fcmv2)) {
+                    recivedFilesTable.remove(new RecivedFileKey(fcmv2.getSenderID(), fcmv2.getFileName()));
+
+                        if (SendUtil.checkIfFileIsImage(fcmv2.getFileName())) {
+                            // Bitmap bm = BitmapFactory.decodeFile(savepath + "/Classrom/" + fcmv2.getFileName());
+                            String tempImagePath = savepath + "/Classrom/" + fcmv2.getFileName();
+                            // Bitmap bm = ScalingUtilities.fitImageDecoder(tempImagePath,mDstWidth,mDstHeight);
+                            Bitmap bm = ScalDownImage.decodeSampledBitmapFromResource(tempImagePath,mDstWidth,mDstHeight);
+                            ImageChatModel.setImage(bm);
+                            ImageChatModel.setMessageType("IMG");
+                            ImageChatModel.setSimpleMessage(fcmv2.getFileName());
+                        } else {
+                            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.filecompleteicon);
+                            ImageChatModel.setImage(bm);
+                            ImageChatModel.setSimpleMessage(fcmv2.getFileName());
+                            ImageChatModel.setMessageType("FILE");
                         }
-                    });
-                    // we detect that file completed
-                    Log.d("INFO", "EOF, FILE REcived Completely");
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                // we put loading Image Here
+                                messageViewerFragmentFragment.updateAdapterchanges();
+                            }
+                        });
+                        // we detect that file completed
+                        Log.d("INFO", "EOF, FILE REcived Completely");
+                    }
+                    /// SendUtil.sendFileChunkToRecivers(clientTable, fcmv2, tRecivers);
                 }
-                /// SendUtil.sendFileChunkToRecivers(clientTable, fcmv2, tRecivers);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

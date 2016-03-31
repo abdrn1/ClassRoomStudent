@@ -4,6 +4,36 @@
     android:layout_height="fill_parent"
     android:background="@drawable/tile_bg"
     android:orientation="vertical" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="10dp"
+        android:paddingStart="10dp"
+        >
+        <ImageView
+            android:id="@+id/useimageiv"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/u25"
+            android:scaleType="fitCenter"
+          />
+
+        <TextView
+            android:id="@+id/username_tv"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Welcome Hany"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <ListView
         android:id="@+id/list_view_messages"
