@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">تطبيق الطالب</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Inser_id">الرجاء ادخال رمز الدخول</string>
+    <string name="login">دخول</string>
+    <string name="unable_to_connect_server">السيرفر لا يعمل الان</string>
+    <string name="server_found">غير قادرعلى العثور على سيرفر</string>
+    <string name="user_status">الحالة</string>
+    <string name="user_id">رقم المستخدم</string>
+    <string name="send">إرسال</string>
+    <string name="btn_send">إرسال</string>
+    <string name="password">كلمة المرور</string>
+    <string name="noseverfound">السيرفر لا يعمل</string>
+    <string name="mcq_question">خيار متعدد</string>
+    <string name="fill_question">ملئ الفراغ</string>
+    <string name="truefalse_question">True or False </string>
+    <string name="finish_exam">انهاء</string>
+    <string name="tue_answer">صح</string>
+    <string name="false_answer">خطأ </string>
+    <string name="radiotrue">صح</string>
+    <string name="radiofalse">خطأ</string>
+    <string name="hello_user">مرحبا بك : </string>
+</resources>
